@@ -1,0 +1,111 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+}
+
+/* LOGIN */
+.login {
+  display: flex;
+  height: 100vh;
+}
+
+.login-box {
+  width: 40%;
+  padding: 60px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 12px;
+  background: orange;
+  border: none;
+  color: #fff;
+  border-radius: 20px;
+}
+
+.login-logo {
+  width: 60%;
+  background: #fde6c4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error {
+  color: red;
+}
+
+/* DASHBOARD */
+.hidden {
+  display: none;
+}
+
+.dashboard {
+  width: 100%;
+}
+
+/* TOP BAR */
+.topbar {
+  height: 60px;
+  background: #334155;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.topbar .left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.logo {
+  background: #fff;
+  color: #334155;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* CONTENT */
+.container {
+  padding: 20px;
+}
+
+.modules {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: #334155;
+  color: #fff;
+  padding: 40px;
+  text-align: center;
+  border-radius: 16px;
+}
+
+.news, .calendar {
+  margin-top: 30px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+}

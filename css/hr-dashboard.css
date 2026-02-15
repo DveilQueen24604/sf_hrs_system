@@ -1,0 +1,230 @@
+/* ===================================
+   HR PAGE ONLY STYLE
+=================================== */
+
+.hr-page .module-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 25px !important;
+  margin-top: 20px;
+}
+
+/* Card Size Fix */
+.hr-page .module-card {
+  background: #3e4a5e;
+  border-radius: 16px;
+  padding: 35px 20px;
+  min-height: 160px;
+
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  transition: all 0.25s ease;
+}
+
+.hr-page .module-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+/* Icon */
+.hr-page .module-card .icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+/* HR Only Row Alignment */
+.hr-page .hr-only {
+  grid-column: span 1 !important;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .hr-page .module-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .hr-page .module-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.report-filter {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.report-card {
+  background: #f4f6f9;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.report-card h3 {
+  margin-top: 8px;
+  font-size: 22px;
+  color: #2c3e50;
+}
+
+.report-actions {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+.table-wrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 15px;
+}
+
+.emp-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.emp-table thead {
+  background: #3e4b5e;
+  color: #fff;
+}
+
+.emp-table th,
+.emp-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.emp-table tbody tr:hover {
+  background-color: #f4f6f9;
+}
+
+
+.btn-edit {
+  background-color: #4b7bec;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-edit:hover {
+  background-color: #3867d6;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.form-grid input,
+.form-grid select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.btn-primary {
+  background: #4b7bec;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #3867d6;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+button {
+  transition: all 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+.approve-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  color: #e74c3c;
+  transform: scale(1.1);
+}

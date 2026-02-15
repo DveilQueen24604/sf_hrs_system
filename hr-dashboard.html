@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>SF+ HRS Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/hr-dashboard.css" />
+ 
+</head>
+
+
+<body class="hr-page">
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/employee-status.js"></script>
+<script src="js/hr-dashboard.js"></script>
+<script src="js/validation.js"></script>
+
+
+
+
+<!-- ===== TOP BAR ===== -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo-circle">SF</div>
+    <span class="company">SF Plus Co.,Ltd.</span>
+  </div>
+
+  <div class="topbar-right">
+    <span class="user-label">USER :</span>
+    <span id="topbarUserName" class="user-name">สมชาย ใจดี</span>
+    <button class="logout" onclick="logout()" >ออก</button>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="page">
+
+  <!-- LEFT CONTENT -->
+  <section class="left">
+
+    <h3 class="section-title">MODULE LIST</h3>
+
+    <div class="module-grid hr-grid">
+
+      <div class="module-card" onclick="openRequest()">
+        <div class="icon">📋</div>
+        <div class="title">Request</div>
+        <div class="subtitle">ยื่นเอกสาร</div>
+      </div>
+
+      <!-- REQUEST POPUP -->
+<div id="requestModal" class="modal">
+  <div class="modal-content">
+    <h3>ยื่นคำขอลา</h3>
+
+    <label>ประเภทการลา</label>
+    <select id="leaveType">
+      <option value="">-- เลือกประเภท --</option>
+      <option>ลากิจ</option>
+      <option>ลาป่วย</option>
+      <option>ลาพักร้อน</option>
+      <option>ขอทำงานล่วงเวลา (OT)</option>
+      <option>ทำงานที่บ้าน (WFH)</option>
+    </select>
+
+    <label>วันที่เริ่ม</label>
+<input type="date" id="startDate">
+
+<label>วันที่สิ้นสุด</label>
+<input type="date" id="endDate">
+
+
+    <label>รายละเอียด</label>
+    <textarea id="leaveDetail" placeholder="ระบุรายละเอียดเพิ่มเติม"></textarea>
+
+    <label>แนบไฟล์</label>
+    <input type="file" id="leaveFile">
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeRequest()">ยกเลิก</button>
+      <button type="button" class="btn-submit" onclick="submitRequest()">ส่งคำขอ</button>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+function openRequest() {
+  document.getElementById("requestModal").style.display = "block";
+}
+function closeRequest() {
+  document.getElementById("requestModal").style.display = "none";
+}
+console.log("SUPABASE CHECK:", window.supabaseClient);
+</script>
+<!-- ส่วนท้าย REQUEST POPUP -->
+
+
+
+<!-- ส่วนหัว Approve POPUP -->
+      <!-- การ์ด Approve -->
+<div class="module-card" onclick="openApprovePopup()">
+  <div class="icon">✍️</div>
+  <div class="title">Approve</div>
+  <div class="subtitle">อนุมัติพนักงาน</div>
+</div>
+
+<!-- Popup -->
+<div id="approvePopup" class="modal">
+  <div class="modal-content-sm">
+    <div class="approve-header">
+      <h2>รายการรออนุมัติ</h2>
+      <button class="close-btn" aria-label="close" onclick="closeApprovePopup()">✕</button>
+    </div>
+
+    <div id="approveList"></div>
+  </div>
+</div>
+<!-- ส่วนท้าย Approve POPUP -->
+
+
+<!-- ส่วนหัว Employee Self Service  POPUP -->
+      <div class="module-card"  onclick="openESSPopup()">
+        <div class="icon">👤</div>
+        <div class="title">Employee Self Service</div>
+        <div class="subtitle">ข้อมูลส่วนบุคคล</div>
+      </div>
+
+<!-- ESS POPUP -->
+<div id="essPopup" class="modal">
+  <div class="modal-content ess">
+
+    <div class="ess-header">
+      <h2>Employee Self Service</h2>
+      <button class="close-btn" onclick="closeESSPopup()">✕</button>
+    </div>
+
+    <!-- Profile -->
+    <div class="ess-profile">
+      <div class="avatar">👤</div>
+      <div class="info">
+        <div><label>รหัสพนักงาน</label><span id="essEmpCode">EMP-001</span></div>
+        <div><label>ชื่อ - นามสกุล</label><span id="essEmpName">สมชาย ใจดี</span></div>
+        <div><label>ตำแหน่ง</label><span id="essPosition">Senior Graphic Designer</span></div>
+        <div><label>แผนก</label><span id="essDepartment">-</span></div>
+        <div class="status active" id="essStatus">Active</div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="ess-summary">
+      <div class="box blue">
+        <p>ลาพักร้อน</p>
+        <h3 id="vacationBox">8 วัน</h3>
+      </div>
+      <div class="box green">
+        <p>ลาป่วย</p>
+        <h3 id="sickBox">2 วัน</h3>
+      </div>
+      <div class="box pink">
+        <p>ลากิจ</p>
+        <h3 id="personalBox">3 วัน</h3>
+      </div>
+      <div class="box yellow">
+        <p>OT สะสม</p>
+        <h3 id="otBox">12 ชม.</h3>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+ <!-- ===== HR ONLY FEATURES ===== -->
+
+  <div class="module-card hr-only" onclick="openHRReport()">
+    <div class="icon">📊</div>
+    <div class="title">Report</div>
+    <div class="subtitle">สรุปข้อมูลพนักงาน</div>
+  </div>
+
+  <div class="module-card" onclick="openEmployeePopup()">
+  <div class="icon">🧾</div>
+  <div class="title">Employees Management</div>
+  <div class="subtitle">จัดการข้อมูลพนักงาน</div>
+</div>
+
+<div id="employeePopup" class="modal">
+  <div class="modal-content-lg">
+    <div class="approve-header">
+  <h2>จัดการข้อมูลพนักงาน</h2>
+  <button class="close-btn" onclick="closeEmployeePopup()">✕</button>
+</div>
+
+
+    <button onclick="openAddEmployee()">+ เพิ่มพนักงาน</button>
+
+    <div class="table-wrapper">
+  <table class="emp-table">
+    <thead>
+      <tr>
+        <th>รหัสพนักงาน</th>
+        <th>ชื่อ - นามสกุล</th>
+        <th>แผนก</th>
+        <th>ตำแหน่ง</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody id="employeeList">
+      <!-- JS จะเติมข้อมูลตรงนี้ -->
+    </tbody>
+  </table>
+</div>
+
+  </div>
+</div>
+<!-- Edit Employee Modal -->
+<div id="editEmployeeModal" class="modal">
+  <div class="modal-content-lg">
+
+    <h3>แก้ไขข้อมูลพนักงาน</h3>
+
+    <input type="hidden" id="editId">
+
+    <div class="form-grid">
+
+      <div>
+        <label>รหัสพนักงาน</label>
+        <input type="text" id="editCode">
+      </div>
+
+      <div>
+        <label>ชื่อ - นามสกุล</label>
+        <input type="text" id="editName">
+      </div>
+
+      <div>
+        <label>แผนก</label>
+        <select id="editDepartment">
+          <option value="ฝ่ายบัญชี">ฝ่ายบัญชี</option>
+          <option value="ฝ่ายการตลาด">ฝ่ายการตลาด</option>
+          <option value="ฝ่ายจัดซื้อ">ฝ่ายจัดซื้อ</option>
+          <option value="ฝ่ายออกแบบ">ฝ่ายออกแบบ</option>
+          <option value="ฝ่ายการผลิต">ฝ่ายการผลิต</option>
+          <option value="ฝ่ายช่าง">ฝ่ายช่าง</option>
+          <option value="ฝ่ายบุคคล">ฝ่ายบุคคล</option>
+        </select>
+      </div>
+
+      <div>
+        <label>ตำแหน่ง</label>
+        <select id="editPosition">
+          <option value="พนักงาน">พนักงาน</option>
+          <option value="หัวหน้างาน">หัวหน้างาน</option>
+          <option value="HR">HR</option>
+          <option value="ผู้จัดการ">ผู้จัดการ</option>
+        </select>
+      </div>
+
+      <div>
+        <label>ลาพักร้อน</label>
+        <input type="number" id="editAnnual">
+      </div>
+
+      <div>
+        <label>ลาป่วย</label>
+        <input type="number" id="editSick">
+      </div>
+
+      <div>
+        <label>ลากิจ</label>
+        <input type="number" id="editPersonal">
+      </div>
+
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="confirmDelete()">ลบพนักงาน</button>
+      <div>
+        <button class="btn-secondary" onclick="closeEditEmployee()">ยกเลิก</button>
+        <button class="btn-primary" onclick="saveEmployee()">บันทึก</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<!-- =========================
+        HR REPORT MODAL
+========================= -->
+<div id="hrReportModal" class="modal">
+  <div class="modal-content">
+
+    <div class="report-header">
+      <h2>HR Report</h2>
+      <button class="close-btn" onclick="closeHRReport()">✕</button>
+    </div>
+
+    <div class="report-filter">
+
+      <div class="filter-group">
+        <label>เลือกปี</label>
+        <select id="reportYear"></select>
+      </div>
+   
+      <div class="filter-group">
+        <label>เลือกเดือน</label>
+        <select id="reportMonth">
+          <option value="">ดูทั้งปี</option>
+          <option value="1">มกราคม</option>
+          <option value="2">กุมภาพันธ์</option>
+          <option value="3">มีนาคม</option>
+          <option value="4">เมษายน</option>
+          <option value="5">พฤษภาคม</option>
+          <option value="6">มิถุนายน</option>
+          <option value="7">กรกฎาคม</option>
+          <option value="8">สิงหาคม</option>
+          <option value="9">กันยายน</option>
+          <option value="10">ตุลาคม</option>
+          <option value="11">พฤศจิกายน</option>
+          <option value="12">ธันวาคม</option>
+        </select>
+      </div>
+
+      <button class="btn-submit" onclick="generateHRReport()">
+        แสดงรายงาน
+      </button>
+
+    </div>
+
+    <div class="report-summary">
+
+      <div class="report-card">
+        <p>คำขอทั้งหมด</p>
+        <h3 id="r_total">0</h3>
+      </div>
+
+      <div class="report-card">
+        <p>ลาป่วย</p>
+        <h3 id="r_sick">0</h3>
+      </div>
+
+      <div class="report-card">
+        <p>ลากิจ</p>
+        <h3 id="r_personal">0</h3>
+      </div>
+
+      <div class="report-card">
+        <p>ลาพักร้อน</p>
+        <h3 id="r_annual">0</h3>
+      </div>
+
+      <div class="report-card">
+        <p>พนักงานที่ลา</p>
+        <h3 id="r_employee">0</h3>
+      </div>
+
+      <div class="report-card">
+        <p>รวมวันลา</p>
+        <h3 id="r_days">0</h3>
+      </div>
+
+      <div class="report-card">
+        <p>OT</p>
+        <h3 id="r_ot">0</h3>
+      </div>
+
+      <div class="report-card">
+        <p>WFH</p>
+        <h3 id="r_wfh">0</h3>
+      </div>
+
+    </div>
+
+    <div class="report-actions">
+      <button onclick="exportExcel()">Export Excel</button>
+<button onclick="exportPDF()">Export PDF</button>
+
+    </div>
+
+  </div>
+</div>
+
+
+
+
+<script>
+async function openESSPopup() {
+  document.getElementById("essPopup").style.display = "block";
+
+  const empId = localStorage.getItem("empId") || "EMP-001";
+
+  // Try to fetch by emp_code first, then by numeric id as fallback
+  let { data, error } = await window.supabaseClient
+    .from("employees")
+    .select("id, emp_code, full_name, position, department, annual_quota, sick_quota, personal_quota")
+    .eq("emp_code", empId)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) console.warn("fetch by emp_code error", error);
+
+  if (!data) {
+    // If empId looks like a numeric id, try 'id' column
+    if (/^\d+$/.test(empId)) {
+      const r = await window.supabaseClient
+        .from("employees")
+        .select("id, emp_code, full_name, position, department, annual_quota, sick_quota, personal_quota")
+        .eq("id", parseInt(empId, 10))
+        .limit(1)
+        .maybeSingle();
+      data = r.data;
+      if (r.error) console.warn("fetch by id error", r.error);
+    }
+  }
+
+  if (!data) {
+    // No profile found — keep defaults but log
+    console.warn("Employee not found:", empId);
+    return;
+  }
+
+  document.getElementById("essEmpCode").textContent = data.emp_code || data.id || "-";
+  document.getElementById("essEmpName").textContent = data.full_name || "-";
+  document.getElementById("essPosition").textContent = data.position || "-";
+  // update topbar and cache the name so header shows correct user immediately
+
+  try {
+    const topbarEl = document.getElementById("topbarUserName");
+    if (data.full_name) {
+      localStorage.setItem("userName", data.full_name);
+      if (topbarEl) topbarEl.textContent = data.full_name;
+    }
+  } catch (e) {
+    console.warn("could not update topbar from ESS popup", e);
+  }
+  // department column exists in DB now
+  const dept = data.department || data.role || "-";
+  const deptEl = document.getElementById("essDepartment");
+  if (deptEl) deptEl.textContent = dept;
+
+  // Quotas: fall back to placeholders if undefined
+  document.getElementById("vacationBox").textContent = (data.annual_quota != null) ? `${data.annual_quota} วัน` : "- วัน";
+  document.getElementById("sickBox").textContent = (data.sick_quota != null) ? `${data.sick_quota} วัน` : "- วัน";
+  document.getElementById("personalBox").textContent = (data.personal_quota != null) ? `${data.personal_quota} วัน` : "- วัน";
+
+  // OT is not in employees table — leave existing value or set to '-' if unknown
+  const otEl = document.getElementById("otBox");
+  if (otEl && otEl.textContent.trim() === "12 ชม.") {
+    // keep initial sample value; in future compute from timesheets
+  }
+}
+
+function closeESSPopup() {
+  document.getElementById("essPopup").style.display = "none";
+}
+</script>
+<!-- ส่วนท้าย Employee Self Service  POPUP -->
+
+</div>
+
+    <h3 class="section-title">NEW AND ANNOUNCEMENT</h3>
+
+    <div class="news-card">
+      <span class="badge blue">SERVICE UPDATE</span>
+      <h4>ยกระดับงานพิมพ์มาตรฐาน One Stop Service</h4>
+      <p>SF Plus พร้อมให้บริการงานพิมพ์คุณภาพสูง ครบวงจร</p>
+    </div>
+
+    <div class="news-card">
+      <span class="badge purple">PREMIUM PRODUCTS</span>
+      <h4>แนะนำสินค้าพรีเมียมและของที่ระลึกแบบใหม่</h4>
+      <p>เหมาะสำหรับองค์กร และงานอีเวนต์</p>
+    </div>
+
+  </section>
+
+  <!-- RIGHT SIDEBAR -->
+   <aside class="right">
+  <h3 class="section-title">CALENDAR</h3>
+
+  <div class="calendar">
+    <div class="calendar-header">
+      <span class="nav" onclick="prevMonth()">&#60;</span>
+      <span class="month" id="monthYear"></span>
+      <span class="nav" onclick="nextMonth()">&#62;</span>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+</aside>
+<script>
+let currentDate = new Date();
+
+function renderCalendar() {
+  const grid = document.getElementById("calendarGrid");
+  const monthYear = document.getElementById("monthYear");
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const monthNames = [
+    "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+    "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"
+  ];
+
+  monthYear.textContent = `${monthNames[month]} ${year}`;
+  grid.innerHTML = "";
+
+  // วันในสัปดาห์
+  const days = ["S","M","T","W","T","F","S"];
+  days.forEach(d => {
+    const el = document.createElement("span");
+    el.innerHTML = `<strong>${d}</strong>`;
+    grid.appendChild(el);
+  });
+
+  // วันเริ่มต้นของเดือน
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // ช่องว่างก่อนวันแรก
+  for (let i = 0; i < firstDay; i++) {
+    grid.appendChild(document.createElement("span"));
+  }
+
+  // วันทั้งหมด
+  const today = new Date();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayEl = document.createElement("span");
+    dayEl.textContent = d;
+
+    if (
+      d === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    ) {
+      dayEl.classList.add("today");
+    }
+
+    grid.appendChild(dayEl);
+  }
+}
+
+function prevMonth() {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
+}
+
+// เรียกครั้งแรก
+renderCalendar();
+</script>
+ </main>
+<script>
+  function logout() {
+    localStorage.clear();       // ล้างสถานะ login
+    window.location.href = "index.html"; // กลับหน้า Login
+  }
+</script>
+</body>
+</html>

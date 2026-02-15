@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>HRMS Login</title>
+
+  <!-- CSS สำหรับหน้า Login เท่านั้น -->
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+
+  <!-- LOGIN CONTAINER -->
+  <div class="login-container">
+
+    <!-- LEFT : LOGIN FORM -->
+    <div class="login-left">
+      <h2>HRMS</h2>
+
+      <input
+        type="text"
+        id="emp"
+        placeholder="รหัสพนักงาน (เช่น EMP001)"
+      >
+
+      <input
+        type="password"
+        id="pass"
+        placeholder="รหัสผ่าน"
+      >
+
+      <button onclick="login()">Sign In</button>
+    </div>
+
+    <!-- RIGHT : LOGO -->
+    <div class="login-right">
+      <img src="Logo.png" alt="SF Plus Logo">
+    </div>
+
+  </div>
+
+  <!-- JS (ต้องอยู่ล่างสุดเท่านั้น) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/login.js"></script>
+
+</body>
+</html>

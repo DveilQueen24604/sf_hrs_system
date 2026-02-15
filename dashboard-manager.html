@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>SF+ HRS Dashboard (Manager)</title>
+  <link rel="stylesheet" href="css/dashboard.css?v=2">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js?v=2"></script>
+  <script src="js/dashboard.js?v=2"></script>
+  <script src="js/manager-request.js"></script>
+  <script src="js/validation.js"></script>
+
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo-circle">SF</div>
+    <span class="company">SF Plus Co.,Ltd.</span>
+  </div>
+
+  <div class="topbar-right">
+    <span class="user-label">USER :</span>
+    <span id="topbarUserName" class="user-name">มาลี มะวิวัล</span>
+    <button class="logout" onclick="logout()">ออก</button>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="page">
+
+  <!-- ===== LEFT CONTENT ===== -->
+  <section class="left">
+
+    <h3 class="section-title">MODULE LIST </h3>
+
+    <div class="module-grid">
+
+      <!-- Request (หัวหน้าเอง) -->
+      <div class="module-card" onclick="openRequest()">
+        <div class="icon">📋</div>
+        <div class="title">Request</div>
+        <div class="subtitle">ยื่นคำขอของตนเอง</div>
+      </div>
+      <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const leaveDateInput = document.getElementById("leaveDate");
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+
+  if (leaveDateInput) {
+    leaveDateInput.setAttribute("max", todayStr);
+  }
+});
+</script>
+
+    <!-- Request (หัวหน้าเอง) -->
+
+
+    <!-- การ์ด -->
+<div class="module-card" onclick="openApprovePopup()">
+  <div class="icon">✍️</div>
+  <div class="title">Approve</div>
+  <div class="subtitle">อนุมัติพนักงาน</div>
+</div>
+
+<!-- popup (อยู่นอกการ์ด) -->
+
+
+
+      <!-- Status -->
+      <div class="module-card" onclick="openStatusPopup()">
+        <div class="icon">📊</div>
+        <div class="title">Status</div>
+        <div class="subtitle">ติดตามผลการอนุมัติ</div>
+      </div>
+      
+
+      <!-- ESS -->
+      <div class="module-card" onclick="openESSPopup()">
+        <div class="icon">👤</div>
+        <div class="title">Employee Self Service</div>
+        <div class="subtitle">ข้อมูลส่วนบุคคล</div>
+      </div>
+
+    <div class="module-card" onclick="openMyHistory()">
+  <div class="icon">📂</div>
+  <div class="title">History</div>
+  <div class="subtitle">ประวัติการลาของตนเอง</div>
+</div>
+
+</div>
+    <!-- ===== NEWS ===== -->
+    <h3 class="section-title">NEW AND ANNOUNCEMENT</h3>
+
+    <div class="news-card">
+      <span class="badge blue">SERVICE UPDATE</span>
+      <h4>ยกระดับงานพิมพ์มาตรฐาน One Stop Service</h4>
+      <p>SF Plus พร้อมให้บริการงานพิมพ์คุณภาพสูง ครบวงจร</p>
+    </div>
+
+    
+    <div class="news-card">
+      <span class="badge purple">PREMIUM PRODUCTS</span>
+      <h4>แนะนำสินค้าพรีเมียมและของที่ระลึกแบบใหม่</h4>
+      <p>เหมาะสำหรับองค์กร และงานอีเวนต์</p>
+    </div>
+
+  </section>
+
+  <!-- ===== RIGHT SIDEBAR ===== -->
+<aside class="right">
+  <h3 class="section-title">CALENDAR</h3>
+
+  <div class="calendar">
+    <div class="calendar-header">
+      <span class="nav" onclick="prevMonth()">&#60;</span>
+      <span class="month" id="monthYear"></span>
+      <span class="nav" onclick="nextMonth()">&#62;</span>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+</aside>
+<script>
+let currentDate = new Date();
+
+function renderCalendar() {
+  const grid = document.getElementById("calendarGrid");
+  const monthYear = document.getElementById("monthYear");
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const monthNames = [
+    "JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE",
+    "JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"
+  ];
+
+  monthYear.textContent = `${monthNames[month]} ${year}`;
+  grid.innerHTML = "";
+
+  // วันในสัปดาห์
+  const days = ["S","M","T","W","T","F","S"];
+  days.forEach(d => {
+    const el = document.createElement("span");
+    el.innerHTML = `<strong>${d}</strong>`;
+    grid.appendChild(el);
+  });
+
+  // วันเริ่มต้นของเดือน
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // ช่องว่างก่อนวันแรก
+  for (let i = 0; i < firstDay; i++) {
+    grid.appendChild(document.createElement("span"));
+  }
+
+  // วันทั้งหมด
+  const today = new Date();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayEl = document.createElement("span");
+    dayEl.textContent = d;
+
+    if (
+      d === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    ) {
+      dayEl.classList.add("today");
+    }
+
+    grid.appendChild(dayEl);
+  }
+}
+
+function prevMonth() {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
+}
+
+// เรียกครั้งแรก
+renderCalendar();
+</script>
+
+<!-- ================= POPUPS ================= -->
+
+<!-- Request Popup -->
+<div id="requestModal" class="modal">
+  <div class="modal-content">
+    <h3>ยื่นคำขอ</h3>
+
+    <label>ประเภทการลา</label>
+    <select id="leaveType">
+      <option value="">-- เลือก --</option>
+      <option>ลาป่วย</option>
+      <option>ลากิจ</option>
+      <option>ลาพักร้อน</option>
+    </select>
+
+    <label>วันที่เริ่ม</label>
+<input type="date" id="startDate">
+
+<label>วันที่สิ้นสุด</label>
+<input type="date" id="endDate">
+
+
+    <label>รายละเอียด</label>
+    <textarea id="leaveDetail"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeRequest()">ยกเลิก</button>
+      <button class="btn-submit" onclick="submitRequest()">ส่ง</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Popup -->
+<div id="approvePopup" class="modal">
+  <div class="modal-content-sm">
+    <div class="approve-header">
+      <h2>รายการรออนุมัติ</h2>
+      <button class="close-btn" aria-label="close" onclick="closeApprovePopup()">✕</button>
+    </div>
+
+    <div id="approveList"></div>
+  </div>
+</div>
+
+<!-- Status Popup -->
+<div id="statusPopup" class="modal">
+  <div class="modal-content-sm">
+    <div class="approve-header">
+      <h2>สถานะการอนุมัติ</h2>
+      <button class="close-btn" aria-label="close" onclick="closeStatusPopup()">✕</button>
+    </div>
+
+    <div id="statusList"></div>
+  </div>
+</div>
+
+<!-- ESS Popup -->
+<!-- ===== EMPLOYEE SELF SERVICE (MANAGER) ===== -->
+<div id="essPopup" class="modal">
+  <div class="modal-content ess">
+
+    <div class="ess-header">
+      <h2>Employee Self Service</h2>
+      <button class="close-btn" onclick="closeESSPopup()">✕</button>
+    </div>
+
+    <!-- Profile -->
+    <div class="ess-profile">
+      <div class="avatar">👤</div>
+
+      <div class="info">
+        <div>
+          <label>รหัสพนักงาน</label>
+          <span id="essEmpId">MGR-001</span>
+        </div>
+        <div>
+          <label>ชื่อ - นามสกุล</label>
+          <span id="essEmpName">มาลี มะวิวัล</span>
+        </div>
+        <div>
+          <label>ตำแหน่ง</label>
+          <span id="essPosition">Department Manager</span>
+        </div>
+        <div>
+          <label>แผนก</label>
+          <span id="essDepartment">Creative Production</span>
+        </div>
+
+        <div class="status active">Active</div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="ess-summary">
+      <div class="box blue">
+        <p>ลาพักร้อน</p>
+        <h3 id="vacationBox">10 วัน</h3>
+      </div>
+      <div class="box green">
+        <p>ลาป่วย</p>
+        <h3 id="sickBox">3 วัน</h3>
+      </div>
+      <div class="box pink">
+        <p>ลากิจ</p>
+        <h3 id="personalBox">2 วัน</h3>
+      </div>
+      <div class="box yellow">
+        <p>OT สะสม</p>
+        <h3 id="otBox">18 ชม.</h3>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+<!-- History Popup -->
+<div id="historyPopup" class="modal">
+  <div class="modal-content-sm">
+    <div class="approve-header">
+      <h2>ประวัติการลาของตนเอง</h2>
+      <button class="close-btn" onclick="closeMyHistory()">✕</button>
+    </div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+
+
+
+<!-- ================= SCRIPTS ================= -->
+<script src="js/dashboard-manager.js"></script>
+
+</body>
+</html>
