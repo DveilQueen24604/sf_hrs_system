@@ -1,21 +1,8 @@
+
 /* ======================
-   ROLE UI SWITCH
+   ROLE UI SWITCH อัพเดตแก้ไข 16/02/69
 ====================== */
 document.addEventListener("DOMContentLoaded", async () => {
-  const role = localStorage.getItem("role");
-
-  const empModules = document.getElementById("employee-modules");
-  const mgrModules = document.getElementById("manager-modules");
-
-  if (empModules && mgrModules) {
-    if (role === "manager") {
-      empModules.style.display = "none";
-      mgrModules.style.display = "grid";
-    } else {
-      mgrModules.style.display = "none";
-      empModules.style.display = "grid";
-    }
-  }
 
   // Load topbar user name. Prefer localStorage, otherwise fetch from `employees` by emp_code or id
   const topbarEl = document.getElementById("topbarUserName");
@@ -56,7 +43,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 /* ======================
    REQUEST (EMPLOYEE)
 ====================== */
-
+/* =========================
+   SUBMIT LEAVE REQUEST
+========================= */
 async function submitRequest() {
   const request = {
   emp_code: localStorage.getItem("empId"),
@@ -124,7 +113,8 @@ if (error) {
 
 }
 
-/* ======================
+
+ /* ======================
    APPROVE BUTTON (SHARED)
 ====================== */
 // ===== APPROVE / STATUS (ใช้ Supabase จริง) =====
@@ -177,9 +167,52 @@ async function loadEmployeeStatus() {
 }
 
 
+
 /* ======================
    STATUS (EMPLOYEE)
 ====================== */
+async function openApprovePopup() {
+  document.getElementById("approvePopup").style.display = "block";
+  await loadApproveList();
+}
+
+async function loadApproveList() {
+  const list = document.getElementById("approveList");
+  const empId = localStorage.getItem("empId");
+
+  const { data, error } = await window.supabaseClient
+    .from("leave_requests")
+    .select("*")
+    .eq("emp_code", empId)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    list.innerHTML = "โหลดข้อมูลไม่สำเร็จ";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.innerHTML = "ไม่มีคำขอรออนุมัติ";
+    return;
+  }
+
+  list.innerHTML = "";
+  data.forEach(r => {
+    list.innerHTML += `
+      <div>
+        <b>${r.leave_type}</b><br>
+        วันที่: ${r.start_date} - ${r.end_date}<br>
+        สถานะ: รออนุมัติ
+      </div>
+      <hr>
+    `;
+  });
+}
+function closeApprovePopup() {
+  document.getElementById("approvePopup").style.display = "none";
+}
 
 async function openStatusPopup() {
   document.getElementById("statusPopup").style.display = "block";
@@ -196,40 +229,67 @@ async function loadEmployeeStatusList() {
 
   const { data, error } = await window.supabaseClient
     .from("leave_requests")
-    .select("leave_type, start_date, end_date, status")
+    .select("*")
     .eq("emp_code", empId)
     .order("created_at", { ascending: false });
 
  if (error) {
-  console.error(error);
-  alert(error.message);
-  return;
-}
+    console.error(error);
+    list.innerHTML = "โหลดข้อมูลไม่สำเร็จ";
+    return;
+  }
 
+  console.log("DATA:", data); 
 
-  if (!data || data.length === 0) {
-    list.innerHTML = "ยังไม่มีคำขอ";
+if (!data || data.length === 0) {
+    list.innerHTML = "ไม่มีข้อมูล";
     return;
   }
 
   list.innerHTML = "";
+
   data.forEach(r => {
-    list.innerHTML += `
-      <div class="status-item">
-        <b>${r.leave_type}</b><br>
-        วันที่: ${r.start_date}${r.end_date ? " - " + r.end_date : ""}<br>
-        สถานะ: <b>${translateStatus(r.status)}</b>
-      </div>
-      <hr>
-    `;
-  });
+  list.innerHTML += `
+    <div>
+      <b>${r.leave_type}</b><br>
+      วันที่: ${r.start_date} - ${r.end_date}<br>
+      สถานะ: ${translateStatus(r.status)}<br>
+
+      ${r.status === "approved" ? `
+        อนุมัติโดย: ${r.approved_by || "-"}<br>
+        วันที่อนุมัติ: ${r.approved_at ? new Date(r.approved_at).toLocaleString() : "-"}<br>
+      ` : ""}
+
+      ${r.status === "rejected" ? `
+        ปฏิเสธโดย: ${r.approved_by || "-"}<br>
+        วันที่ดำเนินการ: ${r.approved_at ? new Date(r.approved_at).toLocaleString() : "-"}<br>
+      ` : ""}
+
+      ${r.status === "pending" ? `
+        <button onclick="cancelLeave('${r.id}')"
+        style="margin-top:8px;background:#dc3545;
+        color:white;border:none;padding:6px 12px;
+        border-radius:6px;cursor:pointer;">
+        ยกเลิกคำขอ
+        </button>
+      ` : ""}
+    </div>
+    <hr>
+  `;
+});
+
 }
+
 
 
 function translateStatus(status) {
   if (status === "pending") return "รออนุมัติ";
   if (status === "approved") return "อนุมัติแล้ว";
   if (status === "rejected") return "ไม่อนุมัติ";
+  if (status === "cancelled") return "ยกเลิกแล้ว";
   return status;
 }
+
+
+
 
