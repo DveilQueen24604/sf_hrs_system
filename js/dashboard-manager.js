@@ -1,6 +1,6 @@
 
 /* ======================
-   APPROVE (MANAGER)
+   APPROVE (MANAGER) อัพเดตแก้ไข 16/02/69
 ====================== */
 
 function openApprovePopup() {
@@ -19,15 +19,19 @@ async function loadApproveList() {
 
   // show only requests assigned to this manager (approver_id matches)
   const myApproverId = localStorage.getItem("empId");
-  const query = window.supabaseClient
-    .from("leave_requests")
-    .select("id, emp_code, full_name, leave_type, start_date, end_date, status, approver_id")
-    .eq("status", "pending")
-    .order("created_at", { ascending: true });
 
-  if (myApproverId) query.eq("approver_id", myApproverId);
+ let query = window.supabaseClient
+  .from("leave_requests")
+  .select("id, emp_code, full_name, leave_type, start_date, end_date, status, approver_id")
+  .eq("status", "pending")
+  .order("created_at", { ascending: true });
 
-  const { data, error } = await query;
+if (myApproverId) {
+  query = query.eq("approver_id", myApproverId);
+}
+
+const { data, error } = await query;
+
 
   if (error) {
     console.error(error);
@@ -56,9 +60,6 @@ async function loadApproveList() {
     `;
   });
 }
-function closeApprovePopup() {
-  document.getElementById("approvePopup").style.display = "none";
-}
 
 
 /* ปุ่มอนุมัติ / ปฏิเสธ */
@@ -74,10 +75,12 @@ function reject(id) {
 async function updateStatus(id, status) {
   const { error } = await window.supabaseClient
   .from("leave_requests")
-  .update({
-    status: status,
-    approver_name: localStorage.getItem("userName")
-  })
+ .update({
+  status: status,
+  approver_name: localStorage.getItem("userName"),
+  approved_at: new Date()
+})
+
   .eq("id", id);   // 🔥 ต้องมีบรรทัดนี้
 
 if (error) {
@@ -108,6 +111,9 @@ if (error) {
         const e = leave.end_date ? new Date(leave.end_date) : s;
         days = Math.round((e - s) / (24 * 60 * 60 * 1000)) + 1;
         if (!isFinite(days) || days < 1) days = 1;
+        const d = leave.end_date ? new Date(leave.end_date) : s;
+if (isNaN(e)) e = s;
+
       } catch (e) {
         days = 1;
       }
@@ -150,7 +156,8 @@ if (error) {
 
           if (updErr) console.error("failed updating employee quota", updErr);
         } else {
-          console.warn("employee not found to deduct quota:", empId);
+          console.warn("employee not found to deduct quota:", empCode);
+
         }
       }
     }
@@ -188,11 +195,13 @@ async function loadStatusList() {
   const list = document.getElementById("statusList");
   list.innerHTML = "กำลังโหลด...";
 
-  const { data, error } = await window.supabaseClient
-    .from("leave_requests")
-    .select("*")
-    .in("status", ["approved", "rejected"])
-    .order("approved_at", { ascending: false });
+ const { data, error } = await window.supabaseClient
+  .from("leave_requests")
+  .select("*")
+  .in("status", ["approved", "rejected"])
+  .eq("approver_id", localStorage.getItem("empId"))
+  .order("approved_at", { ascending: false });
+
 
   if (error) {
     console.error(error);
@@ -218,7 +227,7 @@ async function loadStatusList() {
         <b>${r.leave_type}</b> (${statusBadge})<br>
         ${r.emp_code} - ${r.full_name}<br>
         วันที่ลา: ${r.start_date} ถึง ${r.end_date}<br>
-        อนุมัติโดย: ${r.approved_by || "-"}<br>
+        อนุมัติโดย: ${r.approver_name || "-"}<br>
         วันที่อนุมัติ: ${
           r.approved_at
             ? new Date(r.approved_at).toLocaleString()
